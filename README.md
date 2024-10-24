@@ -1,16 +1,16 @@
-# MOSAIC (Mutation Organizing through Synergistic Analysis of Integrated Clinical data),
+# MOSAIC (Mutation Organizing through Synergistic Analysis of Integrated Clinical data)
+### Authors: Jingxue Feng (jingxuef@sfu.ca), Jie Wang (wangjiew@sfu.ca), Jiarui Zhang (jiaruiz@sfu.ca), Liangliang Wang (lwa68@sfu.ca)
 
+## About
 MOSAIC (Mutation Organizing through Synergistic Analysis of Integrated Clinical data), an innovative pipeline that incorporates both genome sequencing and clinical data to group SARS-CoV-2 mutations that
 share similar relationship with clinical features. The pipeline is shown below
 
-![MOSAIC](Figures/Pipeline_cleaned.pdf)
+<p align="center">
+  <img src="./Figures/Pipeline_cleaned.png" alt="MOSAIC" />
+</p>
 
-# Clustering of Logistic Regression Model (CLRM)
-### Authors: Jingxue Feng (jingxuef@sfu.ca), Jie Wang (wangjiew@sfu.ca), Jiarui Zhang (jiaruiz@sfu.ca), Liangliang Wang (lwa68@sfu.ca)
-## Goal
-We propose a clustering of logistic regression model that incorporates both genome sequencing and clinical data, allowing us to group mutations that share similar relationships with clinical features.
 
-## Model Description 
+## Clustering of Logistic Regression Model
 ```math
 y_{n,m} | Z_{m,k}=1 \sim \text{Bernoulli}(\pi_{n, k})  \text{ with } \pi_{n, k} = \frac{\exp( \mathbf{x}_{n}^{\top} \boldsymbol{\beta}_{k})}{1 + \exp( \mathbf{x}_{n}^{\top} \boldsymbol{\beta}_{k})}, 
 ```
