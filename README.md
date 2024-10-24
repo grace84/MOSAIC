@@ -1,3 +1,10 @@
+# MOSAIC (Mutation Organizing through Synergistic Analysis of Integrated Clinical data),
+
+MOSAIC (Mutation Organizing through Synergistic Analysis of Integrated Clinical data), an innovative pipeline that incorporates both genome sequencing and clinical data to group SARS-CoV-2 mutations that
+share similar relationship with clinical features. The pipeline is shown below
+
+![MOSAIC](./Figures/Pipeline_cleaned.pdf)
+
 # Clustering of Logistic Regression Model (CLRM)
 ### Authors: Jingxue Feng (jingxuef@sfu.ca), Jie Wang (wangjiew@sfu.ca), Jiarui Zhang (jiaruiz@sfu.ca), Liangliang Wang (lwa68@sfu.ca)
 ## Goal
