@@ -4,9 +4,8 @@
 ## About
 MOSAIC (Mutation Organizing through Synergistic Analysis of Integrated Clinical data), an innovative pipeline that incorporates both genome sequencing and clinical data to group SARS-CoV-2 mutations that
 share similar relationship with clinical features. The MOSAIC pipeline is shown below.
-
 <p align="center">
-  <img src="./Figures/Pipeline_cleaned.png" alt="MOSAIC" />
+<img width="725" alt="Screenshot 2024-10-27 at 15 59 23" src="https://github.com/user-attachments/assets/b9d2f8be-2290-45b1-991b-ca450e08a5f1">
 </p>
 
 ## Data Input
