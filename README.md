@@ -62,7 +62,7 @@ p(\mathbf{Y}, \mathbf{Z}|\boldsymbol{\beta},\boldsymbol{\lambda})
 ```
 and $p(\boldsymbol{\beta} | \boldsymbol{\mu}, \boldsymbol{\Sigma})p(\boldsymbol{\lambda})$ are priors for $\boldsymbol{\beta}$ and $\boldsymbol{\lambda}$,  $p(\boldsymbol{\mu} | \boldsymbol{m}_0, \boldsymbol{\Sigma}_0)$ is the hyperprior for the prior means of $\boldsymbol{\beta}$.
 
-Please refer to [MOSAIC/Code/mixture_adaptive_gibbs_sampler.R](https://github.com/grace84/MOSAIC/blob/main/Code/mixture_adaptive_gibbs_sampler.R) for the detailed implementation of adaptive Metropolis-within-Gibbs sampler. The parameter estimation in simulation study and real data analysis is performed based on this adaptive Metropolis-within-Gibbs sampler.
+Please refer to [MOSAIC/Code/mixture_adaptive_gibbs_sampler.R](https://github.com/grace84/MOSAIC---single-lambda/blob/main/Code/mixture_adaptive_gibbs_sampler_single_lambda.R) for the detailed implementation of adaptive Metropolis-within-Gibbs sampler. The parameter estimation in simulation study and real data analysis is performed based on this adaptive Metropolis-within-Gibbs sampler.
 
 ## Data Output
 1. Cluster membership of each mutation;
