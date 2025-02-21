@@ -50,11 +50,17 @@ cluster k;
 - $\boldsymbol{\beta}_k$ is a $(D+1) \times 1$ vector storing the logistic regression intercept and coefficients associated with mutations in cluster $k$.
 
 ### Bayesian Inference of CLRM
-In CLRM, the indicator matrix $\mathbf{Y}$ is observed, the latent variable $\mathbf{Z}$ and the parameter $\boldsymbol{\beta}$ are unknown. For brevity, we omit the dimensions of variables and parameters in the joint posterior density. Bayesian inference depends on the following joint posterior density
+In CLRM, the indicator matrix $\mathbf{Y}$ is observed, the latent variable $\mathbf{Z}$,  the parameters $\boldsymbol{\beta}$ and $\boldsymbol{\lambda}$ are unknown. For brevity, we omit the dimensions of variables. Bayesian inference depends on the following posterior distribution
 ```math
-    p(\mathbf{\beta}, \mathbf{Z}|\mathbf{Y}) \propto  p(\mathbf{\beta}, \mathbf{Z}, \mathbf{Y}) = p(\mathbf{Y}|\mathbf{\beta}, \mathbf{Z})p(\mathbf{\beta} | \mathbf{\mu}, \mathbf{\Sigma}) p(\mathbf{Z}|\mathbf{\lambda}),
+    p(\boldsymbol{\beta}, \boldsymbol{\lambda}|\mathbf{Z},\mathbf{Y}) \propto  
+    p(\boldsymbol{\beta}, \boldsymbol{\lambda}, \mathbf{Z}, \mathbf{Y})  = p(\mathbf{Y}, \mathbf{Z}|\boldsymbol{\beta},\boldsymbol{\lambda})p(\boldsymbol{\beta} | \boldsymbol{\mu}, \boldsymbol{\Sigma}) p(\boldsymbol{\mu}) p(\boldsymbol{\lambda}),
 ```
-and we ascribe a prior density $p(\boldsymbol{\beta}| \boldsymbol{\mu}, \boldsymbol{\Sigma})$ to $\boldsymbol{\beta}$ and a prior density $p(\mathbf{Z}|\boldsymbol{\lambda})$ to $\mathbf{Z}$ for full Bayesian inference. 
+where the complete likelihood 
+```math
+p(\mathbf{Y}, \mathbf{Z}|\boldsymbol{\beta},\boldsymbol{\lambda})
+=p(\mathbf{Y}|\mathbf{Z},\boldsymbol{\beta})p(\mathbf{Z}|\boldsymbol{\lambda}) 
+```
+and $p(\boldsymbol{\beta} | \boldsymbol{\mu}, \boldsymbol{\Sigma})p(\boldsymbol{\lambda})$ are priors for $\boldsymbol{\beta}$ and $\boldsymbol{\lambda}$,  $p(\boldsymbol{\mu} | \boldsymbol{m}_0, \boldsymbol{\Sigma}_0)$ is the hyperprior for the prior means of $\boldsymbol{\beta}$.
 
 Please refer to [MOSAIC/Code/mixture_adaptive_gibbs_sampler.R](https://github.com/grace84/MOSAIC/blob/main/Code/mixture_adaptive_gibbs_sampler.R) for the detailed implementation of adaptive Metropolis-within-Gibbs sampler. The parameter estimation in simulation study and real data analysis is performed based on this adaptive Metropolis-within-Gibbs sampler.
 
