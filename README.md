@@ -1,4 +1,4 @@
-# MOSAIC (Single-Lambda)
+# MOSAIC: Integrating Genomic and Clinical Data for Mutation Clustering in SARS-CoV-2
 
 ### Clustering of Logistic Regression Model (CLRM)
 ```math
