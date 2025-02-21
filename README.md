@@ -66,7 +66,7 @@ Please refer to [MOSAIC/Code/mixture_adaptive_gibbs_sampler.R](https://github.co
 
 ## Data Output
 1. Cluster membership of each mutation;
-2. Within-cluster regression coefficients, indicating the cluster-level relationship with clinical features.
+2. Within-cluster regression coefficients, indicating the cluster-level association with clinical features.
 
 Sample output:
 <p align="center">
