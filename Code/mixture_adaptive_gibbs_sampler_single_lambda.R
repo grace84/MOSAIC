@@ -420,11 +420,15 @@ BIC <- function(Y, X, beta, lambda, Z){
 # }
 
 
+<<<<<<< Updated upstream
 # Compute Silhouette score
 compute_clrm_silhouette <- function(X, Z, beta) {
   
   library("cluster")
   
+=======
+compute_clrm_silhouette <- function(X, Z, beta, distance_type = "parameter") {
+>>>>>>> Stashed changes
   cluster_assignments <- max.col(Z) # Assign clusters based on Z
   
   if (length(unique(cluster_assignments)) == 1) {
@@ -432,6 +436,7 @@ compute_clrm_silhouette <- function(X, Z, beta) {
     return(NA)
   }
   
+<<<<<<< Updated upstream
   # Define the logistic function
   logistic <- function(x) {
     1 / (1 + exp(-x))
@@ -443,12 +448,28 @@ compute_clrm_silhouette <- function(X, Z, beta) {
     })
    
    distances <- as.matrix(dist(t(pred_probs)))  # Pairwise distances between predicted probabilities
+=======
+  if (distance_type == "parameter") {
+    # Compute distance based on logistic regression coefficients (beta)
+    distances <- as.matrix(dist(beta)) # Euclidean distance between beta vectors
+  } else if (distance_type == "prediction") {
+    # Compute distance based on predicted probabilities
+    pred_probs <- sapply(1:nrow(Z), function(i) {
+      cluster <- cluster_assignments[i]
+      logistic(X %*% beta[cluster, ])
+    })
+    distances <- as.matrix(dist(t(pred_probs)))
+  } else {
+    stop("Invalid distance_type. Choose 'parameter' or 'prediction'.")
+  }
+>>>>>>> Stashed changes
   
   # Compute silhouette score
   silhouette_scores <- silhouette(cluster_assignments, distances)
   avg_silhouette <- mean(silhouette_scores[, 3]) # Average silhouette width
   return(avg_silhouette)
 }
+<<<<<<< Updated upstream
 
 
 # # Define the complete data log-likelihood function
@@ -495,4 +516,6 @@ compute_clrm_silhouette <- function(X, Z, beta) {
 #   return(ICL.value)
 # }
 
+=======
+>>>>>>> Stashed changes
 

@@ -286,9 +286,14 @@ stopCluster(cl)
 K.list <- c(2, 3, 4, 5, 6, 7, 8, 9, 10)
 BIC.list <- c()
 loglk.list <- c()
+<<<<<<< Updated upstream
 ICL.list <- c()
 silhouette_scores <- numeric(length(K.list))
 burnin <- 1000
+=======
+silhouette_scores <- numeric(length(k_range))
+burnin <- 10000
+>>>>>>> Stashed changes
 num_iter <- 30000
 
 
@@ -487,6 +492,9 @@ for (K in K.list) {
   # Compute Silhouette Scores
   silhouette_scores[k - 1] <- compute_clrm_silhouette(X, posterior.Z, posterior.beta)
   
+  # Compute Silhouette Scores
+  silhouette_scores[k - 1] <- compute_clrm_silhouette(X, posterior.Z, posterior.beta, distance_type = "prediction")
+  
   # close the file connection
   close(file_conn)
 
@@ -515,6 +523,7 @@ abline(h = 0, col = "red")
 plot(K.list, loglk.list, ylab = "Log-likelihood", xlab="K", type="b", xaxt="n" )
 axis(1, at = K.list, labels = K.list)
 
+<<<<<<< Updated upstream
 # # Plot ICL
 # plot(K.list, ICL.list, ylab = "ICL", xlab="K", type="b", xaxt="n" )
 # axis(1, at = K.list, labels = K.list)
@@ -525,6 +534,11 @@ plot(K.list, silhouette_scores, type = "b", xlab = "Number of Clusters (K)",
      ylab = "Average Silhouette Width", main = "")
 axis(1, at = K.list, labels = K.list)
 
+=======
+# Visualize Silhouette Scores
+plot(K.list, silhouette_scores[1:6], type = "b", xlab = "Number of Clusters (K)",
+     ylab = "Average Silhouette Width", main = "Silhouette Method")
+>>>>>>> Stashed changes
 
 ##### For multiple MCMC chains with optimal K
 K = 4
@@ -574,10 +588,15 @@ dev.off()
 
 for (chain.number in chain.number.list) {
   
+<<<<<<< Updated upstream
   Gibbs_result_1 <- readRDS(paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, 
                                    "_psi", psi, "_scaleparam", scale_param,  "_sigma^2_", const_var, "_Chain1.RDS"))
   Gibbs_result_2 <- readRDS(paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, 
                                    "_psi", psi, "_scaleparam", scale_param,  "_sigma^2_", const_var, "_Chain2.RDS"))
+=======
+  Gibbs_result_1 <- readRDS(paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, ".RDS"))
+  Gibbs_result_2 <- readRDS(paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_Chain1.RDS"))
+>>>>>>> Stashed changes
  
   # Drop burn-in iterations
   selected.iterations <- burnin:num_iter
