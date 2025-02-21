@@ -20,7 +20,7 @@ getwd()
 
 ###------ Data Read In
 
-test.data = read.csv("../Datasets/Real Data/global_data_72216obs_38mut.csv", header= T)  
+test.data = read.csv("./Datasets/Real Data/global_data_72216obs_38mut.csv", header= T)  
 str(test.data)
 
 # Data cleaning
@@ -227,7 +227,7 @@ registerDoParallel(cl=3)
 source("mixture_adaptive_gibbs_sampler_single_lambda.R") # With mixture adaptive proposal on beta_k
 run_Gibbs_optimal_K <- function(K) {
   num_iter <- 30000
-  const_var <- 0.5
+  const_var <- 1
   scale_param <- 0.01 # Scales covariance in the fixed proposal
   R <- 100  # Initial steps for updating beta_k with fixed proposal
   p <- 1
@@ -235,11 +235,12 @@ run_Gibbs_optimal_K <- function(K) {
   ptm <- proc.time()
   Gibbs_result <- Gibbs_CLRM(Y, X, K, num_iter, const_var, scale_param, R, p, psi)
   proc.time()-ptm
-  saveRDS(Gibbs_result, file = paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi,".RDS"))
+  saveRDS(Gibbs_result, file = paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, 
+                                      "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var,".RDS"))
 }
 
 # Run Gibbs sampler in parallel for different values of K
-K.list <- c(2, 3, 4, 5, 6, 7)
+K.list <- c(2, 3, 4, 5, 6, 7, 8, 9, 10)
 
 ## With parallel processing
 ptm <- proc.time()
@@ -254,9 +255,9 @@ stopCluster(cl)
 # Run multiple chains with optimal K
 source("mixture_adaptive_gibbs_sampler_single_lambda.R") # With mixture adaptive proposal on beta_k
 run_Gibbs_multiple_chain <- function(num_chain) {
-  K <- 3
+  K <- 4
   num_iter <- 30000
-  const_var <- 0.5
+  const_var <- 1
   scale_param <- 0.01 # Scales covariance in the fixed proposal
   R <- 100  # Initial steps for updating beta_k with fixed proposal
   p <- 1
@@ -264,7 +265,8 @@ run_Gibbs_multiple_chain <- function(num_chain) {
   ptm <- proc.time()
   Gibbs_result <- Gibbs_CLRM(Y, X, K, num_iter, const_var, scale_param, R, p, psi)
   proc.time()-ptm
-  saveRDS(Gibbs_result, file = paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi,"_Chain", num_chain, ".RDS"))
+  saveRDS(Gibbs_result, file = paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", 
+                                      p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, "_Chain", 2, ".RDS"))
 }
 
 
@@ -281,24 +283,26 @@ stopCluster(cl)
 
 ##### Find optimal K
 
-K.list <- c(2,3,4,5,6,7)
+K.list <- c(2, 3, 4, 5, 6, 7, 8, 9, 10)
 BIC.list <- c()
 loglk.list <- c()
-burnin <- 10000
+ICL.list <- c()
+silhouette_scores <- numeric(length(K.list))
+burnin <- 1000
 num_iter <- 30000
-
 
 
 for (K in K.list) {
   
-  Gibbs_result <- readRDS(paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, ".RDS"))
+  Gibbs_result <- readRDS(paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, 
+                                 "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, ".RDS"))
  
   # Drop burn-in iterations
   # selected.iterations <- burnin:num_iter
-  selected.iterations <- 10000:30000
+  selected.iterations <- 1000:30000
 
   # Draw trace plot of beta
-  output_file <- paste0("../Figures/SingleLambdaRealDataBeta_TracePlot_K", K, "_N", N, "_M", M, "_D", D, ".pdf")
+  output_file <- paste0("./Figures/SingleLambdaRealDataBeta_TracePlot_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, ".pdf")
   pdf(output_file, width = 8, height = 12)
   for (k in 1:K) {
     par(mfrow = c(5, 2))
@@ -347,7 +351,7 @@ for (K in K.list) {
   
   # Get posterior lambda
   posterior.lambda <- matrix(NA, nrow = 1, ncol = K)
-  output_file <- paste0("../Figures/SingleLambdaRealDataLambda_TracePlot_K", K, "_N", N, "_M", M, "_D", D, ".pdf")
+  output_file <- paste0("./Figures/SingleLambdaRealDataLambda_TracePlot_K", K, "_N", N, "_M", M, "_D", D, ".pdf")
   pdf(output_file, width = 8, height = 12)
   par(mfrow = c(5, 2))
   for (k in 1:K) {
@@ -429,7 +433,8 @@ for (K in K.list) {
   
   
   # Create text file
-  file_name <- paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, ".txt")
+  file_name <- paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, 
+                      "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, ".txt")
 
   # open a file connection for writing
   file_conn <- file(file_name, open = "w")
@@ -469,8 +474,18 @@ for (K in K.list) {
   # Compute loglikelihood
   loglk <- log_likelihood(Y, X, posterior.beta, posterior.lambda, posterior.Z)
   
-  # Store loglikelihood values
-  loglk.list <- c(loglk.list, loglk)
+  # # Store loglikelihood values
+  # loglk.list <- c(loglk.list, loglk)
+  
+  # # Compute ICL value
+  # icl <- ICL(Y, X, posterior.beta, posterior.lambda, posterior.Z)
+  # writeLines(paste("ICL: ", icl), file_conn)
+  # 
+  # # Store ICL value
+  # ICL.list <- c(ICL.list, icl)
+  # 
+  # Compute Silhouette Scores
+  silhouette_scores[k - 1] <- compute_clrm_silhouette(X, posterior.Z, posterior.beta)
   
   # close the file connection
   close(file_conn)
@@ -478,29 +493,91 @@ for (K in K.list) {
 }
 
 
-# BIC for different K
-BIC.list <- c(3126641.67, 3119996.09, 3084936.30, 3085179.93, 3085581.02)
+# # BIC for different K
+# BIC.list <- c(3126641.67, 3119996.09, 3084936.30, 3085179.93, 3085581.02)
 
+BIC.list <- c(3126676, 3085177, 3075396, 3072373, 3067441, 3067375, 3067808, 3068045, 3068174)
+silhouette_scores <- c(1.0000000, 1.0000000, 1.0000000, 0.9736842, 0.9736842, 0.9736842, 0.9736842,
+                       0.9736842, 0.9210526)
 
 # Plot BIC
 plot(K.list, BIC.list, ylab = "BIC", xlab="K", type="b", xaxt="n" )
 axis(1, at = K.list, labels = K.list)
 
+delta_bic <- diff(BIC.list)
+plot(K.list[2:length(K.list)], delta_bic, type = "b",
+     xlab = "K", ylab = "ΔBIC",
+     main = "Diminishing ΔBIC for K")
+abline(h = 0, col = "red")
 
-# Plot loglikelihood
+
+# Plot log-likelihood
 plot(K.list, loglk.list, ylab = "Log-likelihood", xlab="K", type="b", xaxt="n" )
+axis(1, at = K.list, labels = K.list)
+
+# # Plot ICL
+# plot(K.list, ICL.list, ylab = "ICL", xlab="K", type="b", xaxt="n" )
+# axis(1, at = K.list, labels = K.list)
+
+
+# Visualize Silhouette Scores
+plot(K.list, silhouette_scores, type = "b", xlab = "Number of Clusters (K)",
+     ylab = "Average Silhouette Width", main = "")
 axis(1, at = K.list, labels = K.list)
 
 
 ##### For multiple MCMC chains with optimal K
-burnin <- 10000
+K = 4
+burnin <- 1000
 num_iter <- 30000
+selected.iterations <- burnin:num_iter
+
+Gibbs_result_1 <- readRDS(paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, 
+                                 "_psi", psi, "_scaleparam", scale_param,  "_sigma^2_", const_var, "_Chain1.RDS"))
+Gibbs_result_2 <- readRDS(paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, 
+                                 "_psi", psi, "_scaleparam", scale_param,  "_sigma^2_", const_var, "_Chain2.RDS"))
+
+# Draw trace plot of beta from two chains
+draw_beta_two_chains <- function(Gibbs_result_1, Gibbs1_cluster_index, Gibbs_result_2, Gibbs2_cluster_index, display_index, D, selected.iterations){
+  old_par <- par(mar = c(5, 5, 2, 2))  # Increase left and bottom margins
+  for (d in 1:(D+1)) {
+    beta_values <- Gibbs_result_1$beta_list[Gibbs1_cluster_index, d, selected.iterations]
+    plot(
+      beta_values,
+      type = "l",
+      xlab = "Iteration",
+      ylab = bquote(beta[.(k = display_index) * "," * .(d-1)]),
+      ylim = c(min(beta_values) - min(beta_values)*0.01, max(beta_values) + max(beta_values)*0.01),
+      cex.lab = 1.2)  # Increase label size
+    lines(Gibbs_result_2$beta_list[k = Gibbs2_cluster_index, d, selected.iterations], col="blue")
+    
+    
+    plot(density(beta_values),
+         xlab = "",
+         ylab = bquote(beta[.(k = display_index) * "," * .(d-1)]),
+         main = "",
+         cex.lab = 1.2)  # Increase label size
+    lines(density(Gibbs_result_2$beta_list[k = Gibbs2_cluster_index, d, selected.iterations]), col="blue")
+  }
+}
+
+
+output_file <- paste0("./Figures/SingleLambdaRealDataBeta_TracePlot_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, ".pdf")
+pdf(output_file, width = 12, height = 18)
+par(mfrow = c(8, 2))
+draw_beta_two_chains(Gibbs_result_1, 3, Gibbs_result_2, 3, 1, D, selected.iterations)
+draw_beta_two_chains(Gibbs_result_1, 2, Gibbs_result_2, 4, 2, D, selected.iterations)
+draw_beta_two_chains(Gibbs_result_1, 1, Gibbs_result_2, 2, 3, D, selected.iterations)
+draw_beta_two_chains(Gibbs_result_1, 4, Gibbs_result_2, 1, 4, D, selected.iterations)
+dev.off()
+
 
 for (chain.number in chain.number.list) {
   
-  Gibbs_result_1 <- readRDS(paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, ".RDS"))
-  Gibbs_result_2 <- readRDS(paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_Chain1.RDS"))
-  Gibbs_result_3 <- readRDS(paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_Chain3.RDS"))
+  Gibbs_result_1 <- readRDS(paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, 
+                                   "_psi", psi, "_scaleparam", scale_param,  "_sigma^2_", const_var, "_Chain1.RDS"))
+  Gibbs_result_2 <- readRDS(paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, 
+                                   "_psi", psi, "_scaleparam", scale_param,  "_sigma^2_", const_var, "_Chain2.RDS"))
  
   # Drop burn-in iterations
   selected.iterations <- burnin:num_iter
@@ -518,7 +595,7 @@ for (chain.number in chain.number.list) {
         ylab = bquote(beta[.(k) * "," * .(d-1)]),
         ylim = c(min(beta_values)-0.002, max(beta_values)+0.002)
       )
-      # lines(Gibbs_result_2$beta_list[k, d, selected.iterations], col="blue")
+      lines(Gibbs_result_2$beta_list[k, d, selected.iterations], col="blue")
       # lines(Gibbs_result_3$beta_list[k=2, d, selected.iterations], col="green")
       # abline(h = 0, col = "red", lty=2)
       
@@ -557,7 +634,7 @@ for (chain.number in chain.number.list) {
   par(mfrow = c(3, 2))
   # for (m in 1:M) {
     for (k in 1:K) {
-      lambda_values <- Gibbs_result_1$lambda_list[1, k, selected.iterations]
+      lambda_values <- Gibbs_result_2$lambda_list[1, k, selected.iterations]
       posterior.lambda[1,k] <- mean(lambda_values)
       plot(
         lambda_values,
@@ -568,7 +645,7 @@ for (chain.number in chain.number.list) {
       # lines(Gibbs_result_2$lambda_list[m, k, selected.iterations], col="blue")
       # lines(Gibbs_result_3$lambda_list[m, k, selected.iterations], col="green")
       
-      plot(density(Gibbs_result_1$lambda_list[1, k,selected.iterations]), 
+      plot(density(Gibbs_result_2$lambda_list[1, k,selected.iterations]), 
            xlab="", 
            ylab = bquote(lambda[.(k)]), 
            main = "")
@@ -595,7 +672,7 @@ for (chain.number in chain.number.list) {
   posterior.Z <- matrix(0, nrow = M, ncol = K)
   for (m in 1:M) {
     MutationName[m] <- colnames(Y)[m]
-    clusterIndex[m] <- which.max(rowSums(Gibbs_result_1$Z_list[m, , selected.iterations]))
+    clusterIndex[m] <- which.max(rowSums(Gibbs_result_2$Z_list[m, , selected.iterations]))
     posterior.Z[m, clusterIndex[m]] <- 1
   }
   
@@ -603,13 +680,13 @@ for (chain.number in chain.number.list) {
   posterior.beta <- matrix(NA, nrow = K, ncol = D+1)
   for (k in 1:K) {
     for (d in 1:(D+1)) {
-      posterior.beta[k, d] <- mean(Gibbs_result_1$beta_list[k, d, selected.iterations])
+      posterior.beta[k, d] <- mean(Gibbs_result_2$beta_list[k, d, selected.iterations])
     }
   }
   
   
   # Create text file
-  file_name <- paste0("../Results/Real Data Results/MixtureAdaptiveGibbsSamplerRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_Chain1.txt")
+  file_name <- paste0("./Results/Real Data Results/MixtureAdaptiveGibbsSamplerDataDrivenVarianceRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_Chain2.txt")
   # file_name <- paste0("../Results/Real Data Results/AdaptiveGibbsSamplerRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_q", q, ".txt")
   # file_name <- paste0("../Results/Real Data Results/GibbsSamplerRealData_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter,".txt")
   
@@ -617,11 +694,11 @@ for (chain.number in chain.number.list) {
   file_conn <- file(file_name, open = "w")
   
   # Print cluster specific mutations, odds ratio, and 95% CI
-  accept.matrix <- apply(Gibbs_result_1$accept_beta_list, 2, c) # convert array to matrix
+  accept.matrix <- apply(Gibbs_result_2$accept_beta_list, 2, c) # convert array to matrix
   for (k in 1:K) {
     writeLines(paste("Cluster ", k), file_conn)
     writeLines(paste(MutationName[which(clusterIndex==k)]), file_conn)
-    summaryTable = t(apply(Gibbs_result_1$beta_list[k, , selected.iterations], 1, function(x)
+    summaryTable = t(apply(Gibbs_result_2$beta_list[k, , selected.iterations], 1, function(x)
       c(exp(mean(x)), exp(quantile(x, c(0.025, 0.975))))))
     rownames(summaryTable)=c("Intercept",
                              "age",

@@ -18,8 +18,8 @@ setwd(cur_dir)
 getwd()
 
 ############################# Data Simulation ##################################
-set.seed(888)
-N <- 20000   # number of observations
+set.seed(880)
+N <- 5000   # number of observations
 M <- 20     # number of mutations
 K <- 3      # number of clusters
 D <- 10     # number of covariates
@@ -42,7 +42,11 @@ X_cat <- matrix(sample(0:1, N*D_cat, replace=TRUE, prob=c(0.9, 0.1)), nrow=N, nc
 X <- cbind(rep(1, N), X_cont, X_cat)
 
 # Simulate coefficients
-beta <- matrix(rnorm(K*(D+1)), nrow=K, ncol=D+1)
+# beta <- matrix(rnorm(K*(D+1)), nrow=K, ncol=D+1)
+beta <- matrix(c(rnorm(D+1, mean = 0, sd = 1),
+                 rnorm(D+1, mean = 1, sd = 1),
+                 rnorm(D+1, mean = -1, sd = 1)), 
+               nrow=K, ncol=D+1)
 
 # # Define the logit link function
 # logit <- function(x) {
@@ -79,7 +83,7 @@ for (m in 1:M) {
 ### Print true simulated data
 
 # Create text file
-file_name <- paste0("../Results/Simulation Results/TrueSimulation_K", K, "_N", N, "_M", M, "_D", D, ".txt")
+file_name <- paste0("TrueSimulation_K", K, "_N", N, "_M", M, "_D", D, ".txt")
 file_conn <- file(file_name, open = "w")
 clusterIndex <- rep(0, M)
 MutationName <- rep("", M)
@@ -101,29 +105,53 @@ for(k in 1:K){
 close(file_conn)
 
 # Save simulated data
-saveRDS(X, paste0("../Datasets/Simulation Data/X_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
-saveRDS(Y, paste0("../Datasets/Simulation Data/Y_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
-saveRDS(Z, paste0("../Datasets/Simulation Data/Z_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
-saveRDS(beta, paste0("../Datasets/Simulation Data/beta_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
-saveRDS(lambda, paste0("../Datasets/Simulation Data/lambda_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
-saveRDS(pi, paste0("../Datasets/Simulation Data/pi_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
+saveRDS(X, paste0("./Datasets/Simulation Data/X_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
+saveRDS(Y, paste0("./Datasets/Simulation Data/Y_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
+saveRDS(Z, paste0("./Datasets/Simulation Data/Z_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
+saveRDS(beta, paste0("./Datasets/Simulation Data/beta_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
+saveRDS(lambda, paste0("./Datasets/Simulation Data/lambda_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
+saveRDS(pi, paste0("./Datasets/Simulation Data/pi_K", K, "_N", N, "_M", M, "_D", D, ".RData"))
 
 
 
 ########################### Recall simulated data ########################
 
 # Read in simulated data
-TrueX <- readRDS(paste0("../Datasets/Simulation Data/X_K", K, "_N", N, "_M", M, "_D", D, ".RData"))            # N x (D+1)
-TrueY <- readRDS(paste0("../Datasets/Simulation Data/Y_K", K, "_N", N, "_M", M, "_D", D, ".RData"))            # N x M
-TrueZ <- readRDS(paste0("../Datasets/Simulation Data/Z_K", K, "_N", N, "_M", M, "_D", D, ".RData"))            # M x K
-TrueBeta <- readRDS(paste0("../Datasets/Simulation Data/beta_K", K, "_N", N, "_M", M, "_D", D, ".RData"))      # K x (D+1)
-TrueLambda <- readRDS(paste0("../Datasets/Simulation Data/lambda_K", K, "_N", N, "_M", M, "_D", D, ".RData"))  # M x K
-TruePi <- readRDS(paste0("../Datasets/Simulation Data/pi_K", K, "_N", N, "_M", M, "_D", D, ".RData"))          # N x K
+TrueX <- readRDS(paste0("./Datasets/Simulation Data/X_K", K, "_N", N, "_M", M, "_D", D, ".RData"))            # N x (D+1)
+TrueY <- readRDS(paste0("./Datasets/Simulation Data/Y_K", K, "_N", N, "_M", M, "_D", D, ".RData"))            # N x M
+TrueZ <- readRDS(paste0("./Datasets/Simulation Data/Z_K", K, "_N", N, "_M", M, "_D", D, ".RData"))            # M x K
+TrueBeta <- readRDS(paste0("./Datasets/Simulation Data/beta_K", K, "_N", N, "_M", M, "_D", D, ".RData"))      # K x (D+1)
+TrueLambda <- readRDS(paste0("./Datasets/Simulation Data/lambda_K", K, "_N", N, "_M", M, "_D", D, ".RData"))  # M x K
+TruePi <- readRDS(paste0("./Datasets/Simulation Data/pi_K", K, "_N", N, "_M", M, "_D", D, ".RData"))          # N x K
 
 N <- nrow(TrueY)
 M <- ncol(TrueY)
 K <- ncol(TrueZ)
 D <- ncol(TrueX)-1
+
+### Print true simulated data
+
+# Create text file
+file_name <- paste0("DifferentBetaMeanTrueSimulation_K", K, "_N", N, "_M", M, "_D", D, ".txt")
+file_conn <- file(file_name, open = "w")
+clusterIndex <- rep(0, M)
+MutationName <- rep("", M)
+for(m in 1:M){
+  MutationName[m] <- paste("mutation ", m)
+  clusterIndex[m] <- which(TrueZ[m,]==1)
+}
+
+for(k in 1:K){
+  writeLines(paste("Cluster ", k), file_conn)
+  writeLines(paste(MutationName[which(clusterIndex==k)]), file_conn)
+  # TrueOR <- exp(TrueBeta[k,]) # print odds ratio
+  # print(TrueOR)
+  TrueBeta.k <- TrueBeta[k,]
+  print(TrueBeta.k)
+  write.table(TrueBeta.k, file_conn, row.names=TRUE, col.names=TRUE)
+}
+
+close(file_conn)
 
 ############################## Run EM algorithm ###############################
 
@@ -239,23 +267,44 @@ registerDoParallel(4)
 #   saveRDS(Gibbs_result, file = paste0("../Results/Simulation Results/2023-08-31 AdaptiveGibbsSamplerSimulation_K", K, "_N", N, "_M", M, "_D", D, "_Iter", num_iter, ".RDS"))
 # }
 
-# Tune with mixture proposal
+# Tune with constant variance
 source("mixture_adaptive_gibbs_sampler_single_lambda.R") # With adaptive proposal on beta_k
-run_Gibbs_optimal_K <- function(K) {
-  num_iter <- 10000
-  const_var <- 1
+run_Gibbs_var <- function(var) { # Sigma0 = const_var*I
+  num_iter <- 30000
+  const_var <- var
   scale_param <- 0.05  # Scales covariance in the fixed proposal
   R <- 100            # Initial steps for updating beta_k with fixed proposal
   p <- 1              # Frequency for updating beta_k with adaptive proposal
   psi <- 0.05
   ptm <- proc.time()
-  Gibbs_result <- Gibbs_CLRM(Y, X, K, num_iter, const_var, scale_param, R, p, psi)
+  Gibbs_result <- Gibbs_CLRM(TrueY, TrueX, K, num_iter, const_var, scale_param, R, p, psi)
   proc.time() - ptm
-  saveRDS(Gibbs_result, file = paste0("../Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, ".RDS"))
+  saveRDS(Gibbs_result, file = paste0("./Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", var, ".RDS"))
+}
+
+var.list <- c(0.5, 1, 3, 5)
+system.time(foreach(var = var.list, .combine = 'c', .verbose = TRUE) %dopar% {
+  run_Gibbs_var(var)
+})
+
+
+# Tune with mixture proposal
+source("mixture_adaptive_gibbs_sampler_single_lambda.R") # With adaptive proposal on beta_k
+run_Gibbs_optimal_K <- function(K) {
+  num_iter <- 30000
+  const_var <- 0.5     # Sigma0 = const_var*I
+  scale_param <- 0.05  # Scales covariance in the fixed proposal
+  R <- 100             # Initial steps for updating beta_k with fixed proposal
+  p <- 1               # Frequency for updating beta_k with adaptive proposal
+  psi <- 0.05
+  ptm <- proc.time()
+  Gibbs_result <- Gibbs_CLRM(TrueY, TrueX, K, num_iter, const_var, scale_param, R, p, psi)
+  proc.time() - ptm
+  saveRDS(Gibbs_result, file = paste0("./Results/Simulation Results/2025-2-2 MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, ".RDS"))
 }
 
 # Run Gibbs sampler in parallel for different values of K
-K.list <- c(2, 3, 4, 5)
+K.list <- c(2, 3, 4, 5, 6, 7)
 system.time(foreach(K = K.list, .combine = 'c', .verbose = TRUE) %dopar% {
   run_Gibbs_optimal_K(K)
 })
@@ -272,7 +321,7 @@ run_Gibbs <- function(chain_number) {
   ptm <- proc.time()
   Gibbs_result <- Gibbs_CLRM(TrueY, TrueX, K, num_iter, const_var, scale_param, R, p, psi)
   proc.time() - ptm
-  saveRDS(Gibbs_result, file = paste0("../Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param,"_Chain", chain_number, ".RDS"))
+  saveRDS(Gibbs_result, file = paste0("./Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param,"_Chain", chain_number, ".RDS"))
 }
 
 
@@ -289,16 +338,18 @@ stopCluster(cl)
 
 ########################### Summarize Gibbs result #############################
 
-K.list <- c(2, 3, 4, 5)
+K.list <- c(3, 4, 5, 6, 7)
 BIC.list <- c()
+silhouette_scores <- numeric(length(K.list))
 burnin <- 1000
-num_iter <- 10000
+num_iter <- 30000
 selected.iterations <- burnin:num_iter
 
 ##### Choose the optimal number of clusters 
 for (K in K.list) {
   
-  Gibbs_result_1 <- readRDS(paste0("../Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param,".RDS"))
+  Gibbs_result_1 <- readRDS(paste0("./Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceSimulation_K", K, "_N", N, "_M", M, "_D", D, 
+                                   "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, ".RDS"))
   
   ### Print estimated results from Gibbs sampler
   
@@ -328,7 +379,8 @@ for (K in K.list) {
   }
   
   # Create text file
-  file_name <- paste0("../Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param,".txt")
+  file_name <- paste0("./Results/Simulation Results/2025-2-2 MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, 
+                      "_scaleparam", scale_param, "_sigma^2_", const_var, ".txt")
   
   # open a file connection for writing
   file_conn <- file(file_name, open = "w")
@@ -358,83 +410,104 @@ for (K in K.list) {
   # Store BIC value
   BIC.list <- c(BIC.list, bic)
   
+  # Compute Silhouette Scores
+  silhouette_scores[k - 1] <- compute_clrm_silhouette(TrueX, posterior.Z, posterior.beta)
+  
   # close the file connection
   close(file_conn)
   
 }
 
 
-# Plot BIC vs. K
-pdf("../Figures/SimulationStudyBIC.pdf", width = 7, height = 5)  # Width and height in inches
+# Plot BIC and Silhouette Scores vs. K
+pdf("./Figures/SimulationStudyBICandSilouetteScore.pdf", width = 7, height = 8)  # Width and height in inches
+par(mfrow = c(2,1))
 plot(K.list, BIC.list, ylab = "BIC", xlab="K", type="b", xaxt="n")
 axis(1, at = K.list, labels = K.list)
+plot(K.list, silhouette_scores, type = "b", 
+     xlab = "Number of Clusters (K)", ylab = "Average Silhouette Width")
 dev.off()
 
-##### Trace plot for parameters
+
+##### Trace plot and density plot on two chains
 K = 3
-burnin <- 10000
-num_iter <- 50000
+burnin <- 1000
+num_iter <- 30000
 selected.iterations <- burnin:num_iter
 
-Gibbs_result_1 <- readRDS(paste0("../Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param,"_Chain1.RDS"))
-Gibbs_result_2 <- readRDS(paste0("../Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param,"_Chain2.RDS"))
+Gibbs_result_1 <- readRDS(paste0("./Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, ".RDS"))
+Gibbs_result_2 <- readRDS(paste0("./Results/Simulation Results/MixtureAdaptiveGibbsSamplerSingleLambdaDataDrivenVarianceSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", 50000, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, "_Chain", 1, ".RDS"))
 
 
-# Draw trace plot of beta
-draw_beta <- function(Gibbs_result, Gibbs_cluster_index, True_cluster_index, D, selected.iterations){
+# Draw trace plot of beta from two chains
+draw_beta_two_chains <- function(Gibbs_result_1, Gibbs1_cluster_index, Gibbs_result_2, Gibbs2_cluster_index, True_cluster_index, 
+                                 D, selected.iterations){
+  old_par <- par(mar = c(5, 5, 2, 2))  # Increase left and bottom margins
+  
   for (d in 1:(D+1)) {
-    beta_values <- Gibbs_result$beta_list[Gibbs_cluster_index, d, selected.iterations]
+    beta_values <- Gibbs_result_1$beta_list[Gibbs1_cluster_index, d, selected.iterations]
     plot(
       beta_values,
       type = "l",
       xlab = "Iteration",
-      ylab = bquote(beta[.(k = Gibbs_cluster_index) * "," * .(d-1)]),
-      ylim = c(min(beta_values)-0.01, max(beta_values)+0.01)
+      ylab = bquote(beta[.(k = True_cluster_index) * "," * .(d-1)]),
+      ylim = c(min(beta_values)-0.01, max(beta_values)+0.01),
+      cex.lab = 1.2  # Increase label size
     )
-    # lines(Gibbs_result_2$beta_list[k=1, d, selected.iterations], col="blue")
+    lines(Gibbs_result_2$beta_list[k = Gibbs2_cluster_index, d, selected.iterations], col="blue")
     abline(h = TrueBeta[True_cluster_index, d], col = "red", lty=1)
-  
+    
     plot(density(beta_values),
-       xlab="",
-       ylab = bquote(beta[.(k = True_cluster_index) * "," * .(d-1)]),
-       main = "")
-    # lines(density(Gibbs_result_2$beta_list[k=1, d, selected.iterations]), col="blue")
-    abline(v = quantile(beta_values, c(0.025, 0.975)), col="black", lty=2)
-    # abline(v = quantile(Gibbs_result_2$beta_list[k=1, d, selected.iterations], c(0.025, 0.975)), col="blue", lty=2)
+         xlab = "",
+         ylab = bquote(beta[.(k = True_cluster_index) * "," * .(d-1)]),
+         main = "",
+         cex.lab = 1.2)
+    lines(density(Gibbs_result_2$beta_list[k = Gibbs2_cluster_index, d, selected.iterations]), col="blue")
     abline(v = TrueBeta[True_cluster_index, d], col = "red", lty=1)
   }
+  
+  par(old_par)
+  
 }
 
+output_file <- paste0("./Figures/SingleLambdaSimulationStudyBeta_Trace&DensityPlot_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, ".pdf")
+pdf(output_file, width = 12, height = 18)
+par(mfrow = c(11, 2))
+draw_beta_two_chains(Gibbs_result_1, 2, Gibbs_result_2, 3, 1, D, selected.iterations)
+draw_beta_two_chains(Gibbs_result_1, 1, Gibbs_result_2, 1, 2, D, selected.iterations)
+draw_beta_two_chains(Gibbs_result_1, 3, Gibbs_result_2, 2, 3, D, selected.iterations)
+dev.off()
+
 par(mfrow = c(6, 2))
-draw_beta(Gibbs_result_1, 1, 3, D, selected.iterations)
-draw_beta(Gibbs_result_1, 2, 2, D, selected.iterations)
-draw_beta(Gibbs_result_1, 3, 1, D, selected.iterations)
+draw_beta(Gibbs_result_1, 1, 1, D, selected.iterations)
+draw_beta(Gibbs_result_1, 2, 3, D, selected.iterations)
+draw_beta(Gibbs_result_1, 3, 2, D, selected.iterations)
 
 
 # for (k in 1:K) {
   # png(paste0("../Figures/RealDataBeta_", k, "_TracePlot_K", K, "_N", N, "_M", M, "_D", D, ".png"), width=3500, height=3500, res=500)
-  par(mfrow = c(4, 3))
+  par(mfrow = c(6, 2))
   for (d in 1:(D+1)) {
-    beta_values <- Gibbs_result_1$beta_list[k=1, d, selected.iterations]
+    beta_values <- Gibbs_result_1$beta_list[k=2, d, selected.iterations]
     plot(
       beta_values,
       type = "l",
       xlab = "Iteration",
-      ylab = bquote(beta[.(k=1) * "," * .(d-1)]),
+      ylab = bquote(beta[.(k=2) * "," * .(d-1)]),
       ylim = c(min(beta_values)-0.01, max(beta_values)+0.01)
     )
     # lines(Gibbs_result_2$beta_list[k=1, d, selected.iterations], col="blue")
     abline(h = TrueBeta[k=3, d], col = "red", lty=1)
-    
-    plot(density(Gibbs_result_1$beta_list[k=1, d, selected.iterations]),
+  
+    plot(density(Gibbs_result_1$beta_list[k=2, d, selected.iterations]),
          xlab="",
-         ylab = bquote(beta[.(k=1) * "," * .(d-1)]),
+         ylab = bquote(beta[.(k=2) * "," * .(d-1)]),
          main = "")
     # lines(density(Gibbs_result_2$beta_list[k=1, d, selected.iterations]), col="blue")
-    abline(v = quantile(Gibbs_result_1$beta_list[k=1, d, selected.iterations], c(0.025, 0.975)), col="black", lty=2)
+    abline(v = quantile(Gibbs_result_1$beta_list[k=2, d, selected.iterations], c(0.025, 0.975)), col="black", lty=2)
     # abline(v = quantile(Gibbs_result_2$beta_list[k=1, d, selected.iterations], c(0.025, 0.975)), col="blue", lty=2)
     abline(v = TrueBeta[k=3, d], col = "red", lty=1)
-  
+  }
     beta_values <- Gibbs_result_1$beta_list[k=2, d, selected.iterations]
     plot(
       beta_values,
@@ -444,7 +517,7 @@ draw_beta(Gibbs_result_1, 3, 1, D, selected.iterations)
       ylim = c(min(beta_values)-0.01, max(beta_values)+0.01)
     )
     # lines(Gibbs_result_2$beta_list[k=2, d, selected.iterations], col="blue")
-    abline(h = TrueBeta[k=1, d], col = "red", lty=1)
+    # abline(h = TrueBeta[k=1, d], col = "red", lty=1)
     
     plot(density(Gibbs_result_1$beta_list[k=2, d, selected.iterations]),
          xlab="",
@@ -453,7 +526,7 @@ draw_beta(Gibbs_result_1, 3, 1, D, selected.iterations)
     # lines(density(Gibbs_result_2$beta_list[k=2, d, selected.iterations]), col="blue")
     abline(v = quantile(Gibbs_result_1$beta_list[k=2, d, selected.iterations], c(0.025, 0.975)), col="black", lty=2)
     # abline(v = quantile(Gibbs_result_2$beta_list[k=2, d, selected.iterations], c(0.025, 0.975)), col="blue", lty=2)
-    abline(v = TrueBeta[k=1, d], col = "red", lty=1)
+    # abline(v = TrueBeta[k=1, d], col = "red", lty=1)
 
     beta_values <- Gibbs_result_1$beta_list[k=3, d, selected.iterations]
     plot(
@@ -464,7 +537,7 @@ draw_beta(Gibbs_result_1, 3, 1, D, selected.iterations)
       ylim = c(min(beta_values)-0.01, max(beta_values)+0.01)
     )
     # lines(Gibbs_result_2$beta_list[k=2, d, selected.iterations], col="blue")
-    abline(h = TrueBeta[k=2, d], col = "red", lty=1)
+    # abline(h = TrueBeta[k=2, d], col = "red", lty=1)
     
     plot(density(Gibbs_result_1$beta_list[k=3, d, selected.iterations]),
          xlab="",
@@ -473,7 +546,7 @@ draw_beta(Gibbs_result_1, 3, 1, D, selected.iterations)
     # lines(density(Gibbs_result_2$beta_list[k=2, d, selected.iterations]), col="blue")
     abline(v = quantile(Gibbs_result_1$beta_list[k=3, d, selected.iterations], c(0.025, 0.975)), col="black", lty=2)
     # abline(v = quantile(Gibbs_result_2$beta_list[k=2, d, selected.iterations], c(0.025, 0.975)), col="blue", lty=2)
-    abline(v = TrueBeta[k=2, d], col = "red", lty=1)
+    # abline(v = TrueBeta[k=2, d], col = "red", lty=1)
   }
 
 # Draw trace plot of lambda
@@ -487,8 +560,8 @@ for (k in 1:K) {
       xlab = "Iteration",
       ylab = bquote(lambda[.(k)])
     )
-    lines(Gibbs_result_2$lambda_list[1, k, selected.iterations], col="blue")
-    abline(h = TrueLambda[1,k], col = "red", lty=1)
+    # lines(Gibbs_result_2$lambda_list[1, k, selected.iterations], col="blue")
+    # abline(h = TrueLambda[1,k], col = "red", lty=1)
     
     posterior.lambda[1,k] <- mean(lambda_values)
 }
@@ -496,7 +569,7 @@ for (k in 1:K) {
 
 ##### Print estimated results from one MCMC chain
 K = 3
-Gibbs_result <- Gibbs_result_1 
+Gibbs_result <- Gibbs_result_2
 
 # Get posterior Z and the cluster membership for each mutation
 clusterIndex <- rep(0, M)
@@ -518,7 +591,7 @@ for (k in 1:K) {
 
 
 # Create text file
-file_name <- paste0("../Results/Simulation Results/MixtureAdaptiveGibbsSamplerSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param,"_Chain1.txt")
+file_name <- paste0("./Results/Simulation Results/MixtureAdaptiveGibbsSamplerSimulation_K", K, "_N", N, "_M", M, "_D", D, "_iter", num_iter, "_p", p, "_R", R, "_psi", psi, "_scaleparam", scale_param, "_sigma^2_", const_var, "_Chain2.txt")
 
 # open a file connection for writing
 file_conn <- file(file_name, open = "w")
@@ -570,7 +643,7 @@ cluster1_data <- data.frame(
     c(mean(x), quantile(x, c(0.025, 0.975)))))[,2],
   CI_upper = t(apply(Gibbs_result$beta_list[k=1, , selected.iterations], 1, function(x)
     c(mean(x), quantile(x, c(0.025, 0.975)))))[,3],
-  True_Value = TrueBeta[3,]
+  True_Value = TrueBeta[2,]
 )
 
 # Cluster 2 data
@@ -584,7 +657,7 @@ cluster2_data <- data.frame(
     c(mean(x), quantile(x, c(0.025, 0.975)))))[,2],
   CI_upper = t(apply(Gibbs_result$beta_list[k=2, , selected.iterations], 1, function(x)
     c(mean(x), quantile(x, c(0.025, 0.975)))))[,3],
-  True_Value = TrueBeta[2,]
+  True_Value = TrueBeta[1,]
 )
 
 # Cluster 3 data
@@ -598,7 +671,7 @@ cluster3_data <- data.frame(
     c(mean(x), quantile(x, c(0.025, 0.975)))))[,2],
   CI_upper = t(apply(Gibbs_result$beta_list[k=3, , selected.iterations], 1, function(x)
     c(mean(x), quantile(x, c(0.025, 0.975)))))[,3],
-  True_Value = TrueBeta[1,]
+  True_Value = TrueBeta[3,]
 )
 
 # Function to plot cluster data
@@ -609,7 +682,7 @@ plot_cluster_data <- function(cluster_data, cluster_name) {
     geom_errorbar(aes(ymin = CI_lower, ymax = CI_upper), width = 0.2) +
     coord_flip() +
     theme_bw() +
-    theme(axis.text.y = element_text(size = 8)) +
+    theme(axis.text.x = element_text(size = 12)) +
     labs(title = paste("Cluster", cluster_name),
          x = expression(beta),
          y = "",
@@ -622,7 +695,7 @@ plot2 <- plot_cluster_data(cluster2_data, "2")
 plot3 <- plot_cluster_data(cluster3_data, "3")
 
 # Displaying the plots
-par(mfrow = c(1, 2))
+par(mfrow = c(3, 1))
 plot1
 plot2
 plot3
