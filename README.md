@@ -1,5 +1,5 @@
 # MOSAIC (Mutation Organizing through Synergistic Analysis of Integrated Clinical data)
-### Authors: Jingxue Feng (jingxuef@sfu.ca), Jie Wang (wangjiew@sfu.ca), Jiarui Zhang (jiaruiz@sfu.ca), Liangliang Wang (lwa68@sfu.ca)
+### Authors: Jingxue Feng (jingxuef@sfu.ca), Jiarui Zhang (jiaruiz@sfu.ca), Jie Wang (johnjiewang@outlook.com), Liangliang Wang (lwa68@sfu.ca)
 
 ## About
 MOSAIC (Mutation Organizing through Synergistic Analysis of Integrated Clinical data), an innovative pipeline that incorporates both genome sequencing and clinical data to group SARS-CoV-2 mutations that
